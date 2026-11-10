@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101319">
+  <meta name="description" content="НомГен — симулятор коллекционера автомобильных номеров. Крути. Собирай. Богатей.">
+  <title>НомГен — коллекционер номеров</title>
+  <link rel="icon" type="image/svg+xml" href="nomgen-logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Russo+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=20261106-gold-game-style">
+  <style>
+    .hero-art{width:min(44vw,450px);height:auto;min-height:0;display:block;flex-shrink:0;position:relative;overflow:visible}
+    .hero-logo{display:block;width:100%;height:auto;max-height:390px;object-fit:contain;filter:drop-shadow(0 18px 35px #000b);position:relative;z-index:2}
+    .brand-mark{background:linear-gradient(145deg,#ffeaa0,#c58b22 55%,#704400);color:#211400;box-shadow:0 0 18px #e9b84b55}
+    @media(max-width:760px){.hero-art{width:290px;right:-70px;opacity:.3;transform:none}.hero-logo{max-height:300px}}
+    @media(max-width:470px){.hero-art{width:250px;right:-80px}}
+  </style>
+</head>
+<body>
+  <div id="auth-gate" class="auth-gate" hidden>
+    <div class="auth-card">
+      <div class="brand-mark">Н</div>
+      <h2>Добро пожаловать в НомГен</h2>
+      <p>Выбери, как начать игру. В Google-аккаунте прогресс будет сохраняться онлайн.</p>
+      <button id="guest-login" class="guest-button">Играть в гостевом режиме</button>
+      <button id="google-login" class="google-button"><span>G</span> Войти через Google</button>
+      <small id="auth-error" role="status"></small>
+    </div>
+  </div>
+  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="НомГен — главная"><span class="brand-mark">Н</span><span>НОМ<span class="accent">ГЕН</span><small>КОЛЛЕКЦИОНЕР НОМЕРОВ</small></span></a>
+    <div class="top-stats">
+      <div class="stat"><span class="stat-icon">₽</span><div><small>ВАШ БАЛАНС</small><strong id="balance">5 000 ₽</strong></div></div>
+      <button id="collection-open" class="stat collection-open" type="button" aria-label="Открыть коллекцию"><span class="stat-icon collection-icon">▤</span><span><small>В КОЛЛЕКЦИИ</small><strong id="collection-count">0 номеров</strong></span></button>
+    </div>
+    <button id="profile-button" class="profile-button" aria-label="Открыть профиль"><span id="profile-avatar" class="profile-avatar"><span>И</span></span><span class="profile-button-label">Профиль</span></button>
+  </header>
+  <div id="auth-success" class="auth-success" role="status" aria-live="polite" hidden></div>
+  <div id="profile-modal" class="profile-modal" hidden>
+    <section class="profile-card" role="dialog" aria-modal="true" aria-labelledby="profile-title">
+      <button id="profile-close" class="profile-close" aria-label="Закрыть">×</button>
+      <h2 id="profile-title">Мой профиль</h2>
+      <button id="settings-open" class="profile-settings-open" type="button">⚙ Настройки звука</button>
+      <button id="yandex-auth" class="profile-settings-open" type="button" hidden>Войти через Яндекс</button>
+      <div id="profile-preview" class="profile-preview"><span>И</span></div>
+      <label class="avatar-upload" for="avatar-file">Изменить фотографию</label>
+      <input id="avatar-file" type="file" accept="image/*" hidden>
+      <button id="avatar-remove" class="text-button" type="button">Убрать аватар</button>
+      <label class="profile-name-label" for="profile-name">Имя игрока</label>
+      <input id="profile-name" class="profile-name-input" maxlength="20" placeholder="Имя игрока">
+      <button id="profile-save" class="profile-save" type="button">Сохранить</button>
+      <button id="profile-logout" class="text-button" type="button">Выйти из аккаунта</button>
+    </section>
+  </div>
+  <div id="settings-modal" class="feature-modal" hidden>
+    <section class="feature-card settings-window" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <button class="feature-close" id="settings-close" aria-label="Закрыть">×</button>
+      <h2 id="settings-title">Настройки</h2>
+      <section class="sound-settings"><h3>Звук и музыка</h3><button id="music-toggle" class="upgrade-toggle" type="button">Включить фоновую музыку</button><label class="volume-control" for="music-volume">Громкость <span id="music-volume-value">35%</span><input id="music-volume" type="range" min="0" max="100" value="35"></label></section>
+      <button id="admin-secret" class="admin-secret" type="button" hidden>95</button>
+      <section class="panel admin-panel" id="admin-panel" hidden>
+        <div class="panel-heading"><div><span class="section-kicker">УПРАВЛЕНИЕ ИГРОЙ</span><h2>Админ-панель</h2></div><button id="admin-toggle" class="text-button">Открыть</button></div>
+        <div id="admin-content" hidden>
+          <nav class="admin-tabs" aria-label="Разделы админ-панели"><button class="admin-tab active" data-admin-tab="players">Игроки</button><button class="admin-tab" data-admin-tab="odds">Шансы</button><button class="admin-tab" data-admin-tab="money">Изменить деньги</button><button class="admin-tab" data-admin-tab="forced">Выдать номер</button></nav>
+          <section class="admin-section" id="admin-players"><div class="admin-actions"><button id="refresh-admin-players" class="text-button">Обновить список</button></div><div id="admin-player-list" class="admin-player-list"><p class="admin-status">Нажми «Обновить список».</p></div></section>
+          <section class="admin-section" id="admin-odds" hidden><p class="admin-warning">Выбери игрока и настрой индивидуальные шансы выпадения редкостей. Чем выше вес, тем чаще выпадает уровень.</p><label class="admin-field">Игрок<select id="odds-player"><option value="">Сначала загрузи список игроков</option></select></label><div id="odds-controls" class="odds-controls"></div><div class="admin-actions"><button id="apply-odds" class="spin-button">Сохранить шансы</button><button id="reset-odds" class="text-button">Вернуть стандартные</button></div></section>
+          <section class="admin-section" id="admin-money" hidden><label class="admin-field">Игрок<select id="money-player"><option value="">Сначала загрузи список игроков</option></select></label><label class="admin-field">Новый баланс, ₽<input id="money-balance" type="number" min="0" step="1" value="5000"></label><button id="save-player-balance" class="spin-button">Сохранить баланс</button><p class="admin-status">Баланс изменится в облачном сохранении выбранного игрока.</p></section>\n          <section class="admin-section" id="admin-forced" hidden><p class="admin-warning">Укажи номер и через сколько попыток он гарантированно выпадет выбранному игроку. Например, 10 — номер появится на десятой попытке.</p><label class="admin-field">Игрок<select id="forced-player"><option value="">Сначала загрузи список игроков</option></select></label><label class="admin-field">Номер (например, А777АА)<input id="forced-plate" maxlength="6" placeholder="А777АА"></label><label class="admin-field">Регион<input id="forced-region" maxlength="3" inputmode="numeric" value="77"></label><label class="admin-field">Через сколько попыток выпадет<input id="forced-count" type="number" min="1" max="100" step="1" value="1"></label><div class="admin-actions"><button id="forced-save" class="spin-button">Назначить номер</button><button id="forced-clear" class="text-button">Отменить</button></div><p id="forced-status" class="admin-status">Настройка применяется только к выбранному игроку.</p></section>
+          <p id="odds-status" class="admin-status">Настройки доступны только администратору.</p>
+        </div>
+      </section>
+    </section>
+  </div>
+  <main class="shell">
+    <section class="hero">
+      <div class="hero-copy"><div class="eyebrow"><span class="live-dot"></span> СИМУЛЯТОР КОЛЛЕКЦИОНЕРА</div>
+        <h1>НАЙДИ СВОЙ<br><span>НОМЕР МЕЧТЫ</span></h1>
+        <p>Охоться за красивыми комбинациями. Собирай редкие номера, продавай находки и создай коллекцию, которой позавидуют.</p>
+        <div class="hero-tags"><span>01 / КРУТИ</span><span>02 / СОБИРАЙ</span><span>03 / БОГАТЕЙ</span></div>
+      </div>
+      <div class="hero-art"><img class="hero-logo" src="nomgen-logo.svg" alt="NomGen — три золотых автомобильных номера под короной"></div>
+    </section>
+    <section class="game-grid">
+      <div class="panel generator-panel">
+        <div class="panel-heading"><div><span class="section-kicker">ГЛАВНОЕ ДЕЙСТВИЕ</span><h2>Генератор номеров</h2></div><span class="price-pill">−500 ₽ / попытка</span></div>
+        <div class="machine">
+          <div class="machine-top"><span>ГОСЗНАК • РФ</span><span class="machine-lights"><i></i><i></i><i></i></span></div>
+          <div class="generator-options"><label>Тип номера<select id="plate-type"><option value="all">Все типы</option><option value="civil">Гражданские РФ</option><option value="police">Полицейские</option><option value="taxi">Такси</option><option value="military">Военные</option><option value="belarus">Беларусь</option></select></label><label>Регион<select id="plate-region-select"><option value="random">Любой регион</option><option>77</option><option>78</option><option>97</option><option>99</option><option>50</option><option>150</option><option>777</option><option>102</option><option>116</option><option>178</option><option> Беларусь</option></select></label></div>
+          <div class="plate-wrap" id="plate-wrap"><div class="license-plate" id="license-plate"><span class="plate-main" id="plate-main">А000АА</span><span class="plate-region-big" id="plate-region">77</span><span class="plate-rus">RUS<br><b>▦</b></span></div></div>
+          <div class="result-info" id="result-info"><span class="rarity-label" id="rarity-label">ГОТОВ К РОЗЫГРЫШУ</span><strong id="result-value">Твоя следующая находка?</strong><small id="result-hint">Нажми кнопку, чтобы запустить генератор</small></div>
+          <button class="spin-button" id="spin-button"><span class="spin-symbol">⟳</span><span>КРУТИТЬ ГЕНЕРАТОР</span><b>500 ₽</b></button>
+          <button id="reward-ad-button" class="reward-ad-button" type="button" hidden>Посмотреть рекламу · получить 5 000 ₽</button>
+          <div class="odds-note">Шанс легендарного номера — 0,5%. Удача любит смелых.</div>
+        </div>
+      </div>
+      <aside class="panel stats-panel">
+        <div class="panel-heading"><div><span class="section-kicker">ТВОЙ ПРОГРЕСС</span><h2>Статистика</h2></div><span class="trophy">✧</span></div>
+        <div class="stat-cards"><div class="mini-stat"><span>Общая стоимость</span><strong id="total-value">0 ₽</strong><small>оценка коллекции</small></div><div class="mini-stat"><span>Самая дорогая находка</span><strong id="best-number">—</strong><small id="best-value">пока нет номеров</small></div><div class="mini-stat"><span>Всего попыток</span><strong id="spins-count">0</strong><small>запусков генератора</small></div></div>
+        <div class="rarity-progress"><div class="progress-title"><span>Редкость коллекции</span><span id="rarity-progress-label">0 / 5</span></div><div class="rarity-dots"><i data-tier="Обычный"></i><i data-tier="Редкий"></i><i data-tier="Эпический"></i><i data-tier="Мифический"></i><i data-tier="Легендарный"></i></div></div>
+      </aside>
+    </section>
+    <section class="panel daily-quests-panel" id="daily-quests"><div class="panel-heading"><div><span class="section-kicker">НАГРАДЫ КАЖДЫЙ ДЕНЬ</span><h2>Ежедневные задания</h2></div><span class="daily-reset-label">Обновление ежедневно</span></div><p class="daily-intro">Выполняй задания, забирай бонусы и пополняй баланс.</p><div id="daily-quest-list" class="daily-quest-list"></div></section>
+    <div id="menu-modal" class="feature-modal menu-backdrop" hidden><section class="feature-card menu-window" role="dialog" aria-modal="true" aria-labelledby="menu-title"><button class="feature-close" id="menu-close" aria-label="Закрыть">×</button><div class="menu-eyebrow">НОМГЕН · МЕНЮ</div><h2 id="menu-title">Выбери раздел</h2><div class="menu-tiles"><button class="menu-tile collection-tile" id="menu-collection"><span class="tile-art plate-stack"><i>А777АА</i><i>М001ММ</i><i>Х999ХХ</i></span><span class="tile-caption"><b>Коллекция</b><small>Твои номера и избранное</small></span><span class="tile-arrow">↗</span></button><button class="menu-tile upgrades-tile" id="menu-upgrades"><span class="tile-art hammer-art"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M38 8 56 26 47 35 29 17z" fill="currentColor"/><path d="m31 22 8 8-23 27a5 5 0 0 1-7-7z" fill="currentColor"/><path d="m25 13 8-8 9 9-8 8z" fill="currentColor"/></svg></span><span class="tile-caption"><b>Улучшения</b><small>Прокачай удачу и редкость</small></span><span class="tile-arrow">↗</span></button></div></section></div>
+    <div id="upgrade-modal" class="feature-modal" hidden><section class="feature-card upgrade-window" role="dialog" aria-modal="true" aria-labelledby="upgrade-title"><button class="feature-close" id="upgrade-close" aria-label="Закрыть">×</button><h2 id="upgrade-title">Улучшения</h2><div class="upgrade-grid"><article class="upgrade-card"><span class="section-kicker">УЛУЧШЕНИЕ</span><h3>Удача <strong id="luck-level">×1</strong></h3><p id="luck-description">Повышает шанс редких номеров.</p><button id="buy-luck" class="upgrade-buy">Улучшить · 10 000 ₽</button></article></div></section></div>
+    <div id="collection-modal" class="feature-modal" hidden><section class="feature-card collection-window" role="dialog" aria-modal="true" aria-labelledby="collection-window-title"><button class="feature-close" id="collection-close" aria-label="Закрыть">×</button><h2 id="collection-window-title">Моя коллекция</h2><section class="panel collection-panel"><div class="panel-heading collection-heading"><div><span class="section-kicker">ТВОИ СОКРОВИЩА</span><h2>Коллекция <span class="count-badge" id="collection-badge">0</span></h2></div><div class="collection-tools"><select id="sort-select" aria-label="Сортировка коллекции"><option value="new">Сначала новые</option><option value="price">Сначала дорогие</option><option value="rarity">По редкости</option></select><button class="text-button" id="open-catalog" type="button">Каталог редкостей</button><button class="text-button" id="sell-duplicates" title="Продать повторные номера">Продать дубликаты</button><button class="text-button sell-all-button" id="sell-all">Продать все</button></div></div><div class="empty-state" id="empty-state"><div class="empty-icon">▤</div><strong>Коллекция пока пуста</strong><span>Первый номер уже ждёт тебя в генераторе</span></div><div class="collection-grid" id="collection-grid"></div></section></section></div>
+    <div id="catalog-modal" class="feature-modal" hidden><section class="feature-card catalog-window" role="dialog" aria-modal="true" aria-labelledby="catalog-title"><button class="feature-close" id="catalog-close" aria-label="Закрыть">×</button><span class="section-kicker">СПРАВОЧНИК КОЛЛЕКЦИОНЕРА</span><h2 id="catalog-title">Каталог редкостей</h2><p class="catalog-note">Игровые ориентиры оценки. Указанные ассоциации серий не подтверждают принадлежность конкретного автомобиля ведомству.</p><input id="catalog-search" class="catalog-search" type="search" placeholder="Найти серию или комбинацию…"><div id="catalog-list" class="catalog-list"></div></section></div>
+    <section class="panel history-panel"><div class="panel-heading"><div><span class="section-kicker">ФИНАНСОВЫЙ ЖУРНАЛ</span><h2>История продаж</h2></div><span class="history-count" id="sales-count">0 операций</span></div><div class="history-list" id="history-list"><div class="history-empty">Здесь появятся твои сделки</div></div></section>
+    <section class="panel leaderboard-panel" id="leaderboard-panel"><div class="panel-heading"><div><span class="section-kicker">СОСТЯЗАНИЕ</span><h2>Лидерборд игроков</h2></div><span class="trophy">🏆</span></div><div class="player-entry"><label for="player-name">Имя игрока</label><input id="player-name" maxlength="20" placeholder="Введи свой ник"><button id="save-player" class="text-button">Сохранить профиль</button><button id="logout-button" class="text-button">Выйти</button></div><p class="leaderboard-note">Публичный рейтинг: показывается самый редкий номер каждого игрока и его стоимость.</p><div class="leaderboard-refresh" id="leaderboard-refresh">Обновление через 60 сек.</div><div id="leaderboard" class="leaderboard-list"><div class="history-empty">Стань первым участником рейтинга</div></div></section>
+    <footer><span class="footer-brand">НОМГЕН</span><span>Крути. Собирай. Богатей. Найди номер мечты!</span><button id="reset-game" class="reset-button">Сбросить прогресс</button></footer>
+  </main>
+  <nav class="bottom-nav" aria-label="Основная навигация"><button id="home-button" class="bottom-nav-item active"><span class="nav-icon">⌂</span><span class="nav-label">Главная</span></button><button id="leaders-button" class="bottom-nav-item"><span class="nav-icon ladder-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3v18M19 3v18M5 7h14M5 12h14M5 17h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M9 7v10m6-10v10" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".45"/></svg></span><span class="nav-label">Лидеры</span></button><button id="menu-button" class="bottom-nav-item"><span class="nav-icon">☷</span><span class="nav-label">Меню</span></button></nav>
+  <div id="win-overlay" class="win-overlay" role="dialog" aria-modal="true" aria-label="Редкая находка">
+    <div class="win-card">
+      <button id="win-close" class="win-close" aria-label="Закрыть">×</button>
+      <div class="win-sparkles" aria-hidden="true">✦　✧　✦</div>
+      <span class="win-caption">НОВАЯ НАХОДКА</span>
+      <strong id="win-tier" class="win-tier">РЕДКИЙ</strong>
+      <div class="win-license"><strong id="win-plate">А777АА</strong><span id="win-region">77</span><small>RUS</small></div>
+      <div id="win-rarity-meter" class="win-rarity-meter" aria-hidden="true"><span></span></div><div id="win-pattern" class="win-pattern"></div>
+      <span class="win-price-caption">ОЦЕНОЧНАЯ СТОИМОСТЬ</span>
+      <strong id="win-price" class="win-price">0 ₽</strong>
+      <span class="win-added">НОМЕР ДОБАВЛЕН В КОЛЛЕКЦИЮ</span>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    // SDK: для архива Яндекс Игр используется относительный путь, на GitHub Pages — официальный CDN.
+    window.nomgenYandexSdkReady = new Promise(resolve => {
+      const script = document.createElement("script");
+      const host = location.hostname;
+      script.src = host.includes("yandex.")
+        ? "/sdk.js"
+        : "https://sdk.games.s3.yandex.net/sdk.js";
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.head.appendChild(script);
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="app.js?v=20261106-real-prices"></script>
+</body>
+</html>
